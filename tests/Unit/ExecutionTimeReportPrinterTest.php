@@ -126,12 +126,12 @@ final class ExecutionTimeReportPrinterTest extends TestCase
             $firstLine = $testLines[0];
             $secondLine = $testLines[1];
 
-            $firstColonPos = strpos($firstLine, ':');
-            $secondColonPos = strpos($secondLine, ':');
+            $firstClockPos = strpos($firstLine, '⏱');
+            $secondClockPos = strpos($secondLine, '⏱');
 
-            $this->assertNotFalse($firstColonPos);
-            $this->assertNotFalse($secondColonPos);
-            $this->assertEquals($firstColonPos, $secondColonPos, 'Columns should be aligned');
+            $this->assertNotFalse($firstClockPos);
+            $this->assertNotFalse($secondClockPos);
+            $this->assertEquals($firstClockPos, $secondClockPos, 'Columns should be aligned');
         }
     }
 
@@ -220,22 +220,16 @@ final class ExecutionTimeReportPrinterTest extends TestCase
         $output = ob_get_clean() ?: '';
 
         // FastTest should not be colored
-        $fastTestPos = strpos($output, 'FastTest');
-        $this->assertNotFalse($fastTestPos);
-        $fastTestLine = substr($output, $fastTestPos, 100);
+        $fastTestLine = $this->extractLineContaining($output, 'FastTest');
         $this->assertStringNotContainsString("\x1b[", $fastTestLine);
 
         // WarningTest should be yellow
-        $warningTestPos = strpos($output, 'WarningTest');
-        $this->assertNotFalse($warningTestPos);
-        $warningTestLine = substr($output, $warningTestPos, 200);
+        $warningTestLine = $this->extractLineContaining($output, 'WarningTest');
         $this->assertStringContainsString("\x1b[33m", $warningTestLine);
         $this->assertStringNotContainsString("\x1b[31m", $warningTestLine);
 
         // DangerTest should be red
-        $dangerTestPos = strpos($output, 'DangerTest');
-        $this->assertNotFalse($dangerTestPos);
-        $dangerTestLine = substr($output, $dangerTestPos, 200);
+        $dangerTestLine = $this->extractLineContaining($output, 'DangerTest');
         $this->assertStringContainsString("\x1b[31m", $dangerTestLine);
     }
 
@@ -254,21 +248,27 @@ final class ExecutionTimeReportPrinterTest extends TestCase
         $output = ob_get_clean() ?: '';
 
         // Test1 (0.8s) should not be colored
-        $test1Pos = strpos($output, 'Test1');
-        $this->assertNotFalse($test1Pos);
-        $test1Line = substr($output, $test1Pos, 100);
+        $test1Line = $this->extractLineContaining($output, 'Test1');
         $this->assertStringNotContainsString("\x1b[", $test1Line);
 
         // Test2 (1.2s) should be yellow (>= 1.0 but < 2.0)
-        $test2Pos = strpos($output, 'Test2');
-        $this->assertNotFalse($test2Pos);
-        $test2Line = substr($output, $test2Pos, 200);
+        $test2Line = $this->extractLineContaining($output, 'Test2');
         $this->assertStringContainsString("\x1b[33m", $test2Line);
 
         // Test3 (3.0s) should be red (>= 2.0)
-        $test3Pos = strpos($output, 'Test3');
-        $this->assertNotFalse($test3Pos);
-        $test3Line = substr($output, $test3Pos, 200);
+        $test3Line = $this->extractLineContaining($output, 'Test3');
         $this->assertStringContainsString("\x1b[31m", $test3Line);
+    }
+
+    private function extractLineContaining(string $output, string $search): string
+    {
+        $lines = explode("\n", $output);
+        foreach ($lines as $line) {
+            if (str_contains($line, $search)) {
+                return $line;
+            }
+        }
+
+        return '';
     }
 }

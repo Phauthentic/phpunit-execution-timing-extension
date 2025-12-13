@@ -17,6 +17,15 @@
         </testsuite>
     </testsuites>
 
+    <extensions>
+        <bootstrap class="Phauthentic\PHPUnit\ExecutionTiming\ExecutionTimeExtension">
+            <parameter name="topN" value="10"/>
+            <parameter name="showIndividualTimings" value="false"/>
+            <parameter name="warningThreshold" value="1.0"/>
+            <parameter name="dangerThreshold" value="5.0"/>
+        </bootstrap>
+    </extensions>
+
     <source>
         <include>
             <directory suffix=".php">src</directory>
