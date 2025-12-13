@@ -8,6 +8,7 @@ A PHPUnit extension that tracks and reports test execution times, helping you id
 - Displays a summary of the slowest tests after test execution
 - Configurable number of slowest tests to display
 - Optional per-test timing output
+- Color-coded output based on configurable thresholds (yellow for warnings, red for danger)
 - Aligned column formatting for easy reading
 - Compatible with PHPUnit 10, 11, and 12
 
@@ -34,6 +35,8 @@ Add the extension to your `phpunit.xml.dist` or `phpunit.xml` file:
         <bootstrap class="Phauthentic\PHPUnit\ExecutionTiming\ExecutionTimeExtension">
             <parameter name="topN" value="10"/>
             <parameter name="showIndividualTimings" value="false"/>
+            <parameter name="warningThreshold" value="1.0"/>
+            <parameter name="dangerThreshold" value="5.0"/>
         </bootstrap>
     </extensions>
 </phpunit>
@@ -43,19 +46,27 @@ Add the extension to your `phpunit.xml.dist` or `phpunit.xml` file:
 
 - **`topN`** (default: `10`): Number of slowest tests to display in the summary report
 - **`showIndividualTimings`** (default: `false`): Whether to display timing for each test as it runs
+- **`warningThreshold`** (default: `1.0`): Time in seconds at which tests will be colored yellow (warning). Tests with execution time >= this value will be highlighted.
+- **`dangerThreshold`** (default: `5.0`): Time in seconds at which tests will be colored red (danger). Tests with execution time >= this value will be highlighted in red. Tests between `warningThreshold` and `dangerThreshold` will be colored yellow.
 
 ## Usage
 
-After running your tests, you'll see a summary report at the end showing the slowest tests:
+After running your tests, you'll see a summary report at the end showing the slowest tests. Tests are color-coded based on their execution time:
+
+- **Yellow**: Tests that exceed the warning threshold (default: 1 second)
+- **Red**: Tests that exceed the danger threshold (default: 5 seconds)
+- **Normal**: Tests below the warning threshold
 
 ```
 Top 10 slowest tests:
 
-  1. MyTest::testSlowOperation                    : 1234.56 ms (1.235 s)
-  2. AnotherTest::testComplexCalculation          :  987.65 ms (0.988 s)
-  3. DatabaseTest::testLargeQuery                  :  654.32 ms (0.654 s)
+  1. MyTest::testSlowOperation                    : 1234.56 ms (1.235 s)  [colored red]
+  2. AnotherTest::testComplexCalculation          :  987.65 ms (0.988 s)  [colored yellow]
+  3. DatabaseTest::testLargeQuery                  :  654.32 ms (0.654 s)  [colored yellow]
   ...
 ```
+
+Note: The actual output will show ANSI color codes when viewed in a terminal that supports colors. The colors help quickly identify tests that may need optimization.
 
 ### Example Output
 
@@ -92,6 +103,24 @@ With `showIndividualTimings` set to `true`, you'll also see timing for each test
     </extensions>
 </phpunit>
 ```
+
+### With Custom Thresholds
+
+```xml
+<phpunit>
+    <extensions>
+        <bootstrap class="Phauthentic\PHPUnit\ExecutionTiming\ExecutionTimeExtension">
+            <parameter name="topN" value="10"/>
+            <parameter name="warningThreshold" value="0.5"/>
+            <parameter name="dangerThreshold" value="2.0"/>
+        </bootstrap>
+    </extensions>
+</phpunit>
+```
+
+This configuration will:
+- Show yellow for tests taking 0.5 seconds or more
+- Show red for tests taking 2.0 seconds or more
 
 ## How It Works
 

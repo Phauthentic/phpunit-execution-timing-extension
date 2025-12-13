@@ -30,6 +30,8 @@ final class ExecutionTimeExtension implements Extension
     private float $testStartTime = 0.0;
     private int $topN = 10;
     private bool $showIndividualTimings = false;
+    private float $warningThreshold = 1.0;
+    private float $dangerThreshold = 5.0;
 
     public function bootstrap(
         Configuration $configuration,
@@ -64,7 +66,9 @@ final class ExecutionTimeExtension implements Extension
     {
         $printer = new ExecutionTimeReportPrinter(
             $this->testTimes,
-            $this->topN
+            $this->topN,
+            $this->warningThreshold,
+            $this->dangerThreshold
         );
 
         $printer->print();
@@ -96,6 +100,14 @@ final class ExecutionTimeExtension implements Extension
                 $parameters->get('showIndividualTimings'),
                 FILTER_VALIDATE_BOOLEAN
             );
+        }
+
+        if ($parameters->has('warningThreshold')) {
+            $this->warningThreshold = (float)$parameters->get('warningThreshold');
+        }
+
+        if ($parameters->has('dangerThreshold')) {
+            $this->dangerThreshold = (float)$parameters->get('dangerThreshold');
         }
     }
 }
