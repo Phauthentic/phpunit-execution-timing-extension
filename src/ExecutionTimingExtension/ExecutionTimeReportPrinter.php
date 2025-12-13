@@ -87,7 +87,7 @@ final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInte
 
     /**
      * @param array<int, array{name: string, time: float}> $topTests
-     * @return array{rank: int, name: int}
+     * @return array{rank: int, name: int, timeMs: int, timeSec: int}
      */
     private function calculateColumnWidths(array $topTests): array
     {
@@ -100,15 +100,31 @@ final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInte
             )
         );
 
+        $maxTimeMsWidth = max(
+            array_map(
+                static fn(array $test): int => strlen(sprintf('%.2f ms', round($test['time'] * 1000, 2))),
+                $topTests
+            )
+        );
+
+        $maxTimeSecWidth = max(
+            array_map(
+                static fn(array $test): int => strlen(sprintf('(%.3f s)', round($test['time'], 3))),
+                $topTests
+            )
+        );
+
         return [
             'rank' => $maxRankWidth,
             'name' => $maxNameWidth,
+            'timeMs' => $maxTimeMsWidth,
+            'timeSec' => $maxTimeSecWidth,
         ];
     }
 
     /**
      * @param array{name: string, time: float} $test
-     * @param array{rank: int, name: int} $columnWidths
+     * @param array{rank: int, name: int, timeMs: int, timeSec: int} $columnWidths
      */
     private function printTestLine(array $test, int $rank, array $columnWidths): void
     {
@@ -116,19 +132,21 @@ final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInte
         $timeSec = round($test['time'], 3);
         $rankFormatted = $this->formatRank($rank, $columnWidths['rank']);
         $nameFormatted = $this->formatTestName($test['name'], $columnWidths['name']);
+        $timeMsFormatted = $this->formatTimeMs($timeMs, $columnWidths['timeMs']);
+        $timeSecFormatted = $this->formatTimeSec($timeSec, $columnWidths['timeSec']);
 
         $color = $this->determineColor($test['time']);
 
         $nameDisplay = $color !== '' ? Color::colorize($color, $nameFormatted) : $nameFormatted;
-        $timeMsDisplay = $color !== '' ? Color::colorize($color, sprintf('%.2f ms', $timeMs)) : sprintf('%.2f ms', $timeMs);
-        $timeSecDisplay = $color !== '' ? Color::colorize($color, sprintf('(%.3f s)', $timeSec)) : sprintf('(%.3f s)', $timeSec);
+        $timeMsDisplay = $color !== '' ? Color::colorize($color, $timeMsFormatted) : $timeMsFormatted;
+        $timeSecDisplay = $color !== '' ? Color::colorize($color, $timeSecFormatted) : $timeSecFormatted;
 
         printf(
-            "  %s. %s : %s %s" . PHP_EOL,
+            "  %s. ⏱ %s %s %s" . PHP_EOL,
             $rankFormatted,
-            $nameDisplay,
             $timeMsDisplay,
-            $timeSecDisplay
+            $timeSecDisplay,
+            $nameDisplay
         );
     }
 
@@ -158,5 +176,15 @@ final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInte
     private function formatTestName(string $name, int $width): string
     {
         return str_pad($name, $width, ' ');
+    }
+
+    private function formatTimeMs(float $timeMs, int $width): string
+    {
+        return str_pad(sprintf('%.2f ms', $timeMs), $width, ' ', STR_PAD_LEFT);
+    }
+
+    private function formatTimeSec(float $timeSec, int $width): string
+    {
+        return str_pad(sprintf('(%.3f s)', $timeSec), $width, ' ', STR_PAD_LEFT);
     }
 }
