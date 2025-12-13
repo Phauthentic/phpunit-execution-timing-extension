@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="PHPUnit Execution Timing Extension">
+    <description>PHP CodeSniffer configuration for PHPUnit Execution Timing Extension</description>
+
+    <file>src</file>
+    <file>tests</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/cache/*</exclude-pattern>
+
+    <arg name="basepath" value="."/>
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+    <arg name="parallel" value="8"/>
+    <arg name="warning-severity" value="0"/>
+    <arg name="error-severity" value="1"/>
+
+    <rule ref="PSR12"/>
+</ruleset>
+
