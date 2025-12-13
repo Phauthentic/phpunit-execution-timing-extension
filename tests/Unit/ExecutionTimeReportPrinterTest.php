@@ -27,7 +27,7 @@ final class ExecutionTimeReportPrinterTest extends TestCase
 
         ob_start();
         $printer->print();
-        $output = ob_get_clean();
+        $output = ob_get_clean() ?: '';
 
         $this->assertEmpty($output);
     }
@@ -41,7 +41,7 @@ final class ExecutionTimeReportPrinterTest extends TestCase
 
         ob_start();
         $printer->print();
-        $output = ob_get_clean();
+        $output = ob_get_clean() ?: '';
 
         $this->assertEmpty($output);
     }
@@ -55,7 +55,7 @@ final class ExecutionTimeReportPrinterTest extends TestCase
 
         ob_start();
         $printer->print();
-        $output = ob_get_clean();
+        $output = ob_get_clean() ?: '';
 
         $this->assertStringContainsString('Top 1 slowest tests:', $output);
         $this->assertStringContainsString('Test1', $output);
@@ -74,7 +74,7 @@ final class ExecutionTimeReportPrinterTest extends TestCase
 
         ob_start();
         $printer->print();
-        $output = ob_get_clean();
+        $output = ob_get_clean() ?: '';
 
         $slowPos = strpos($output, 'SlowTest');
         $mediumPos = strpos($output, 'MediumTest');
@@ -98,7 +98,7 @@ final class ExecutionTimeReportPrinterTest extends TestCase
 
         ob_start();
         $printer->print();
-        $output = ob_get_clean();
+        $output = ob_get_clean() ?: '';
 
         $this->assertStringContainsString('Top 2 slowest tests:', $output);
         $this->assertStringContainsString('Test1', $output);
@@ -116,7 +116,7 @@ final class ExecutionTimeReportPrinterTest extends TestCase
 
         ob_start();
         $printer->print();
-        $output = ob_get_clean();
+        $output = ob_get_clean() ?: '';
 
         $lines = explode("\n", $output);
         $testLines = array_filter($lines, static fn(string $line): bool => str_contains($line, '.'));
@@ -146,7 +146,7 @@ final class ExecutionTimeReportPrinterTest extends TestCase
 
         ob_start();
         $printer->print();
-        $output = ob_get_clean();
+        $output = ob_get_clean() ?: '';
 
         $this->assertStringContainsString('123.00 ms', $output);
         $this->assertStringContainsString('0.123 s', $output);
