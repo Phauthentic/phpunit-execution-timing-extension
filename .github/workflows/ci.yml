@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master, main, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master, main, develop ]
 
 jobs:
   test:
@@ -56,7 +56,7 @@ jobs:
           composer install --no-interaction --prefer-dist
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit
+        run: composer test
 
   code-quality:
     name: Code Quality
@@ -89,8 +89,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --level=8 src
+        run: composer analyse
 
       - name: Run PHPCS
-        run: vendor/bin/phpcs
-
+        run: composer cs-check

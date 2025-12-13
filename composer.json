@@ -37,15 +37,16 @@
     },
     "config": {
         "sort-packages": true,
+        "bin-dir": "./bin",
         "allow-plugins": {
             "phpstan/extension-installer": true
         }
     },
     "scripts": {
-        "cs-check": "phpcs --standard=PSR12 src tests",
-        "cs-fix": "phpcbf --standard=PSR12 src tests",
-        "test": "phpunit",
-        "analyse": "phpstan analyse --level=8 src",
+        "cs-check": "./bin/phpcs",
+        "cs-fix": "./bin/phpcbf",
+        "test": "./bin/phpunit",
+        "analyse": "./bin/phpstan analyse",
         "quality": [
             "@cs-check",
             "@analyse",
