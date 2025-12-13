@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Phauthentic\PHPUnit\ExecutionTiming;
 
+use PHPUnit\Util\Color;
+
 final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInterface
 {
     /**
@@ -23,7 +25,9 @@ final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInte
      */
     public function __construct(
         private readonly array $testTimes,
-        private readonly int $topN
+        private readonly int $topN,
+        private readonly float $warningThreshold = 1.0,
+        private readonly float $dangerThreshold = 5.0
     ) {
     }
 
@@ -113,13 +117,32 @@ final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInte
         $rankFormatted = $this->formatRank($rank, $columnWidths['rank']);
         $nameFormatted = $this->formatTestName($test['name'], $columnWidths['name']);
 
+        $color = $this->determineColor($test['time']);
+
+        $nameDisplay = $color !== '' ? Color::colorize($color, $nameFormatted) : $nameFormatted;
+        $timeMsDisplay = $color !== '' ? Color::colorize($color, sprintf('%.2f ms', $timeMs)) : sprintf('%.2f ms', $timeMs);
+        $timeSecDisplay = $color !== '' ? Color::colorize($color, sprintf('(%.3f s)', $timeSec)) : sprintf('(%.3f s)', $timeSec);
+
         printf(
-            "  %s. %s : %.2f ms (%.3f s)" . PHP_EOL,
+            "  %s. %s : %s %s" . PHP_EOL,
             $rankFormatted,
-            $nameFormatted,
-            $timeMs,
-            $timeSec
+            $nameDisplay,
+            $timeMsDisplay,
+            $timeSecDisplay
         );
+    }
+
+    private function determineColor(float $time): string
+    {
+        if ($time >= $this->dangerThreshold) {
+            return 'fg-red';
+        }
+
+        if ($time >= $this->warningThreshold) {
+            return 'fg-yellow';
+        }
+
+        return '';
     }
 
     private function formatRank(int $rank, int $width): string

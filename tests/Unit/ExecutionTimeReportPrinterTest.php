@@ -155,4 +155,120 @@ final class ExecutionTimeReportPrinterTest extends TestCase
         $this->assertStringContainsString('12345.00 ms', $output);
         $this->assertStringContainsString('12.345 s', $output);
     }
+
+    public function testPrintDoesNotColorTestBelowThreshold(): void
+    {
+        $testTimes = [
+            ['name' => 'FastTest', 'time' => 0.5],
+        ];
+        $printer = new ExecutionTimeReportPrinter($testTimes, 10, 1.0, 5.0);
+
+        ob_start();
+        $printer->print();
+        $output = ob_get_clean() ?: '';
+
+        $this->assertStringContainsString('FastTest', $output);
+        // Should not contain ANSI color codes
+        $this->assertStringNotContainsString("\x1b[", $output);
+    }
+
+    public function testPrintColorsTestWithWarningThreshold(): void
+    {
+        $testTimes = [
+            ['name' => 'WarningTest', 'time' => 1.5],
+        ];
+        $printer = new ExecutionTimeReportPrinter($testTimes, 10, 1.0, 5.0);
+
+        ob_start();
+        $printer->print();
+        $output = ob_get_clean() ?: '';
+
+        $this->assertStringContainsString('WarningTest', $output);
+        // Should contain yellow ANSI color code (fg-yellow = 33)
+        $this->assertStringContainsString("\x1b[33m", $output);
+        // Should not contain red color code
+        $this->assertStringNotContainsString("\x1b[31m", $output);
+    }
+
+    public function testPrintColorsTestWithDangerThreshold(): void
+    {
+        $testTimes = [
+            ['name' => 'DangerTest', 'time' => 6.0],
+        ];
+        $printer = new ExecutionTimeReportPrinter($testTimes, 10, 1.0, 5.0);
+
+        ob_start();
+        $printer->print();
+        $output = ob_get_clean() ?: '';
+
+        $this->assertStringContainsString('DangerTest', $output);
+        // Should contain red ANSI color code (fg-red = 31)
+        $this->assertStringContainsString("\x1b[31m", $output);
+    }
+
+    public function testPrintColorsCorrectlyWithMultipleThresholds(): void
+    {
+        $testTimes = [
+            ['name' => 'FastTest', 'time' => 0.5],
+            ['name' => 'WarningTest', 'time' => 2.0],
+            ['name' => 'DangerTest', 'time' => 6.0],
+        ];
+        $printer = new ExecutionTimeReportPrinter($testTimes, 10, 1.0, 5.0);
+
+        ob_start();
+        $printer->print();
+        $output = ob_get_clean() ?: '';
+
+        // FastTest should not be colored
+        $fastTestPos = strpos($output, 'FastTest');
+        $this->assertNotFalse($fastTestPos);
+        $fastTestLine = substr($output, $fastTestPos, 100);
+        $this->assertStringNotContainsString("\x1b[", $fastTestLine);
+
+        // WarningTest should be yellow
+        $warningTestPos = strpos($output, 'WarningTest');
+        $this->assertNotFalse($warningTestPos);
+        $warningTestLine = substr($output, $warningTestPos, 200);
+        $this->assertStringContainsString("\x1b[33m", $warningTestLine);
+        $this->assertStringNotContainsString("\x1b[31m", $warningTestLine);
+
+        // DangerTest should be red
+        $dangerTestPos = strpos($output, 'DangerTest');
+        $this->assertNotFalse($dangerTestPos);
+        $dangerTestLine = substr($output, $dangerTestPos, 200);
+        $this->assertStringContainsString("\x1b[31m", $dangerTestLine);
+    }
+
+    public function testPrintRespectsThresholdConfiguration(): void
+    {
+        $testTimes = [
+            ['name' => 'Test1', 'time' => 0.8],
+            ['name' => 'Test2', 'time' => 1.2],
+            ['name' => 'Test3', 'time' => 3.0],
+        ];
+        // Custom thresholds: warning at 1.0, danger at 2.0
+        $printer = new ExecutionTimeReportPrinter($testTimes, 10, 1.0, 2.0);
+
+        ob_start();
+        $printer->print();
+        $output = ob_get_clean() ?: '';
+
+        // Test1 (0.8s) should not be colored
+        $test1Pos = strpos($output, 'Test1');
+        $this->assertNotFalse($test1Pos);
+        $test1Line = substr($output, $test1Pos, 100);
+        $this->assertStringNotContainsString("\x1b[", $test1Line);
+
+        // Test2 (1.2s) should be yellow (>= 1.0 but < 2.0)
+        $test2Pos = strpos($output, 'Test2');
+        $this->assertNotFalse($test2Pos);
+        $test2Line = substr($output, $test2Pos, 200);
+        $this->assertStringContainsString("\x1b[33m", $test2Line);
+
+        // Test3 (3.0s) should be red (>= 2.0)
+        $test3Pos = strpos($output, 'Test3');
+        $this->assertNotFalse($test3Pos);
+        $test3Line = substr($output, $test3Pos, 200);
+        $this->assertStringContainsString("\x1b[31m", $test3Line);
+    }
 }
