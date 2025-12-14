@@ -45,8 +45,6 @@ final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInte
 
         $this->printHeader(count($topTests));
         $this->printTestLines($topTests);
-
-        echo PHP_EOL;
     }
 
     private function shouldPrint(): bool
@@ -142,7 +140,7 @@ final class ExecutionTimeReportPrinter implements ExecutionTimeReportPrinterInte
         $timeSecDisplay = $color !== '' ? Color::colorize($color, $timeSecFormatted) : $timeSecFormatted;
 
         printf(
-            "  %s. ⏱ %s %s %s" . PHP_EOL,
+            "  %s. ⏱  %s %s %s" . PHP_EOL,
             $rankFormatted,
             $timeMsDisplay,
             $timeSecDisplay,

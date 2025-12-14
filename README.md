@@ -57,12 +57,12 @@ After running your tests, you'll see a summary report at the end showing the slo
 - **Red**: Tests that exceed the danger threshold (default: 5 seconds)
 - **Normal**: Tests below the warning threshold
 
-```
+```text
 Top 10 slowest tests:
 
-  1. MyTest::testSlowOperation                    : 1234.56 ms (1.235 s)  [colored red]
-  2. AnotherTest::testComplexCalculation          :  987.65 ms (0.988 s)  [colored yellow]
-  3. DatabaseTest::testLargeQuery                  :  654.32 ms (0.654 s)  [colored yellow]
+  1. ⏱ 1234.56 ms (1.235 s) MyTest::testSlowOperation                    [colored red]
+  2. ⏱  987.65 ms (0.988 s) AnotherTest::testComplexCalculation          [colored yellow]
+  3. ⏱  654.32 ms (0.654 s) DatabaseTest::testLargeQuery                 [colored yellow]
   ...
 ```
 
