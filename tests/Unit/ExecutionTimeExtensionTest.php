@@ -133,4 +133,139 @@ final class ExecutionTimeExtensionTest extends TestCase
 
         $this->assertEmpty($output);
     }
+
+    public function testDefaultShowFQCNIsTrue(): void
+    {
+        $reflection = new \ReflectionClass($this->extension);
+        $property = $reflection->getProperty('showFQCN');
+        $property->setAccessible(true);
+
+        $this->assertTrue($property->getValue($this->extension));
+    }
+
+    public function testExtractConfigurationFromParametersWithShowFQCNTrue(): void
+    {
+        $parameters = ParameterCollection::fromArray([
+            'showFQCN' => 'true',
+        ]);
+
+        $reflection = new \ReflectionClass($this->extension);
+        $method = $reflection->getMethod('extractConfigurationFromParameters');
+        $method->setAccessible(true);
+        $method->invoke($this->extension, $parameters);
+
+        $property = $reflection->getProperty('showFQCN');
+        $property->setAccessible(true);
+
+        $this->assertTrue($property->getValue($this->extension));
+    }
+
+    public function testExtractConfigurationFromParametersWithShowFQCNFalse(): void
+    {
+        $parameters = ParameterCollection::fromArray([
+            'showFQCN' => 'false',
+        ]);
+
+        $reflection = new \ReflectionClass($this->extension);
+        $method = $reflection->getMethod('extractConfigurationFromParameters');
+        $method->setAccessible(true);
+        $method->invoke($this->extension, $parameters);
+
+        $property = $reflection->getProperty('showFQCN');
+        $property->setAccessible(true);
+
+        $this->assertFalse($property->getValue($this->extension));
+    }
+
+    public function testFormatTestNameWithFQCNEnabled(): void
+    {
+        $reflection = new \ReflectionClass($this->extension);
+        $method = $reflection->getMethod('formatTestName');
+        $method->setAccessible(true);
+
+        $testName = 'Phauthentic\\PHPUnit\\ExecutionTiming\\Tests\\Unit\\MyTestClass::testMethod';
+        $result = $method->invoke($this->extension, $testName);
+
+        $this->assertEquals('Phauthentic\\PHPUnit\\ExecutionTiming\\Tests\\Unit\\MyTestClass::testMethod', $result);
+    }
+
+    public function testFormatTestNameWithFQCNDisabled(): void
+    {
+        $parameters = ParameterCollection::fromArray([
+            'showFQCN' => 'false',
+        ]);
+
+        $reflection = new \ReflectionClass($this->extension);
+        $extractMethod = $reflection->getMethod('extractConfigurationFromParameters');
+        $extractMethod->setAccessible(true);
+        $extractMethod->invoke($this->extension, $parameters);
+
+        $formatMethod = $reflection->getMethod('formatTestName');
+        $formatMethod->setAccessible(true);
+
+        $testName = 'Phauthentic\\PHPUnit\\ExecutionTiming\\Tests\\Unit\\MyTestClass::testMethod';
+        $result = $formatMethod->invoke($this->extension, $testName);
+
+        $this->assertEquals('MyTestClass::testMethod', $result);
+    }
+
+    public function testFormatTestNameWithFQCNDisabledAndNoNamespace(): void
+    {
+        $parameters = ParameterCollection::fromArray([
+            'showFQCN' => 'false',
+        ]);
+
+        $reflection = new \ReflectionClass($this->extension);
+        $extractMethod = $reflection->getMethod('extractConfigurationFromParameters');
+        $extractMethod->setAccessible(true);
+        $extractMethod->invoke($this->extension, $parameters);
+
+        $formatMethod = $reflection->getMethod('formatTestName');
+        $formatMethod->setAccessible(true);
+
+        $testName = 'MyTestClass::testMethod';
+        $result = $formatMethod->invoke($this->extension, $testName);
+
+        $this->assertEquals('MyTestClass::testMethod', $result);
+    }
+
+    public function testFormatTestNameWithFQCNDisabledAndNoMethodName(): void
+    {
+        $parameters = ParameterCollection::fromArray([
+            'showFQCN' => 'false',
+        ]);
+
+        $reflection = new \ReflectionClass($this->extension);
+        $extractMethod = $reflection->getMethod('extractConfigurationFromParameters');
+        $extractMethod->setAccessible(true);
+        $extractMethod->invoke($this->extension, $parameters);
+
+        $formatMethod = $reflection->getMethod('formatTestName');
+        $formatMethod->setAccessible(true);
+
+        $testName = 'Phauthentic\\PHPUnit\\ExecutionTiming\\Tests\\Unit\\MyTestClass';
+        $result = $formatMethod->invoke($this->extension, $testName);
+
+        $this->assertEquals('Phauthentic\\PHPUnit\\ExecutionTiming\\Tests\\Unit\\MyTestClass', $result);
+    }
+
+    public function testFormatTestNameWithFQCNDisabledAndSingleNamespaceLevel(): void
+    {
+        $parameters = ParameterCollection::fromArray([
+            'showFQCN' => 'false',
+        ]);
+
+        $reflection = new \ReflectionClass($this->extension);
+        $extractMethod = $reflection->getMethod('extractConfigurationFromParameters');
+        $extractMethod->setAccessible(true);
+        $extractMethod->invoke($this->extension, $parameters);
+
+        $formatMethod = $reflection->getMethod('formatTestName');
+        $formatMethod->setAccessible(true);
+
+        $testName = 'MyNamespace\\MyTestClass::testMethod';
+        $result = $formatMethod->invoke($this->extension, $testName);
+
+        $this->assertEquals('MyTestClass::testMethod', $result);
+    }
 }
