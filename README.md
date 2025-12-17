@@ -35,6 +35,7 @@ Add the extension to your `phpunit.xml.dist` or `phpunit.xml` file:
         <bootstrap class="Phauthentic\PHPUnit\ExecutionTiming\ExecutionTimeExtension">
             <parameter name="topN" value="10"/>
             <parameter name="showIndividualTimings" value="false"/>
+            <parameter name="showFQCN" value="true"/>
             <parameter name="warningThreshold" value="1.0"/>
             <parameter name="dangerThreshold" value="5.0"/>
         </bootstrap>
@@ -46,6 +47,7 @@ Add the extension to your `phpunit.xml.dist` or `phpunit.xml` file:
 
 - **`topN`** (default: `10`): Number of slowest tests to display in the summary report
 - **`showIndividualTimings`** (default: `false`): Whether to display timing for each test as it runs
+- **`showFQCN`** (default: `true`): Whether to display fully qualified class names (FQCN) or just the class name. When set to `false`, only the class name without namespace will be shown (e.g., `MyTestClass::testMethod` instead of `Phauthentic\PHPUnit\ExecutionTiming\Tests\MyTestClass::testMethod`)
 - **`warningThreshold`** (default: `1.0`): Time in seconds at which tests will be colored yellow (warning). Tests with execution time >= this value will be highlighted.
 - **`dangerThreshold`** (default: `5.0`): Time in seconds at which tests will be colored red (danger). Tests with execution time >= this value will be highlighted in red. Tests between `warningThreshold` and `dangerThreshold` will be colored yellow.
 
@@ -121,6 +123,22 @@ With `showIndividualTimings` set to `true`, you'll also see timing for each test
 This configuration will:
 - Show yellow for tests taking 0.5 seconds or more
 - Show red for tests taking 2.0 seconds or more
+
+### With Short Class Names (showFQCN disabled)
+
+```xml
+<phpunit>
+    <extensions>
+        <bootstrap class="Phauthentic\PHPUnit\ExecutionTiming\ExecutionTimeExtension">
+            <parameter name="topN" value="10"/>
+            <parameter name="showFQCN" value="false"/>
+        </bootstrap>
+    </extensions>
+</phpunit>
+```
+
+This configuration will display only the class name without the full namespace path, making the output more compact:
+- `MyTestClass::testMethod` instead of `Phauthentic\PHPUnit\ExecutionTiming\Tests\MyTestClass::testMethod`
 
 ## How It Works
 

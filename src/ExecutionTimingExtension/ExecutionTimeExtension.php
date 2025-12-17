@@ -30,6 +30,7 @@ final class ExecutionTimeExtension implements Extension
     private float $testStartTime = 0.0;
     private int $topN = 10;
     private bool $showIndividualTimings = false;
+    private bool $showFQCN = true;
     private float $warningThreshold = 1.0;
     private float $dangerThreshold = 5.0;
 
@@ -51,14 +52,15 @@ final class ExecutionTimeExtension implements Extension
     {
         $duration = microtime(true) - $this->testStartTime;
         $testName = $event->test()->id();
+        $displayName = $this->formatTestName($testName);
         $this->testTimes[] = [
-            'name' => $testName,
+            'name' => $displayName,
             'time' => $duration,
         ];
 
         if ($this->showIndividualTimings) {
             $timeMs = round($duration * 1000, 2);
-            printf("  ⏱  %s: %.2f ms\n", $testName, $timeMs);
+            printf("  ⏱  %s: %.2f ms\n", $displayName, $timeMs);
         }
     }
 
@@ -109,5 +111,34 @@ final class ExecutionTimeExtension implements Extension
         if ($parameters->has('dangerThreshold')) {
             $this->dangerThreshold = (float)$parameters->get('dangerThreshold');
         }
+
+        if ($parameters->has('showFQCN')) {
+            $this->showFQCN = filter_var(
+                $parameters->get('showFQCN'),
+                FILTER_VALIDATE_BOOLEAN
+            );
+        }
+    }
+
+    private function formatTestName(string $testName): string
+    {
+        if ($this->showFQCN) {
+            return $testName;
+        }
+
+        // Extract class name from format: Fully\Qualified\ClassName::methodName
+        if (str_contains($testName, '::')) {
+            $parts = explode('::', $testName, 2);
+            $className = $parts[0];
+            $methodName = $parts[1] ?? '';
+
+            // Get just the class name (last part of namespace)
+            $classNameParts = explode('\\', $className);
+            $shortClassName = end($classNameParts);
+
+            return $shortClassName . ($methodName !== '' ? '::' . $methodName : '');
+        }
+
+        return $testName;
     }
 }
